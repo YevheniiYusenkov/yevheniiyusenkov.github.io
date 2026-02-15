@@ -75,8 +75,8 @@
     }
     .coin-wrap {
       position: relative;
-      width: min(52vw, 280px);
-      aspect-ratio: 1 / 1;
+      width: var(--coin-size, min(16vw, 120px));
+      height: var(--coin-size, min(16vw, 120px));
       display: grid;
       place-items: center;
     }
@@ -84,27 +84,32 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background:
-        radial-gradient(circle at 30% 30%, #fff7d1 0%, rgba(255,255,255,0.7) 18%, transparent 28%),
-        radial-gradient(circle at 70% 65%, rgba(255,255,255,0.35) 0%, transparent 35%),
-        radial-gradient(circle at 50% 50%, var(--gold1) 0%, var(--gold2) 55%, var(--gold3) 100%);
-      box-shadow:
-        inset 0 6px 10px rgba(255,255,255,0.35),
-        inset 0 -12px 16px rgba(0,0,0,0.25),
-        0 18px 30px rgba(0,0,0,0.35);
-      border: 2px solid rgba(255,255,255,0.28);
+      border: 0;
+      padding: 0;
+      background: none;
+      cursor: pointer;
       display: grid;
       place-items: center;
-      transform: translateZ(0);
-      transition: transform 120ms ease, box-shadow 120ms ease;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.35));
+      transition: transform 120ms ease;
+      position: relative;
+      z-index: 10;
     }
-    .coin:active {
-      transform: scale(0.98);
-      box-shadow:
-        inset 0 4px 8px rgba(255,255,255,0.32),
-        inset 0 -10px 14px rgba(0,0,0,0.22),
-        0 10px 20px rgba(0,0,0,0.3);
+    .coin svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 50%;
+      pointer-events: none;
     }
+    .coin img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      pointer-events: none;
+    }
+    .coin:active { transform: scale(0.98); }
     .coin-ring {
       position: absolute;
       inset: 8%;
@@ -112,6 +117,7 @@
       border: 2px dashed rgba(255,255,255,0.35);
       mix-blend-mode: screen;
       opacity: 0.6;
+      pointer-events: none;
     }
     .coin-logo {
       font-weight: 900;
@@ -119,15 +125,17 @@
       color: #7a4b00;
       text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.35);
       letter-spacing: 1px;
+      pointer-events: none;
     }
     .sparkle {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 20px;
+      height: 20px;
       background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.0) 70%);
       opacity: 0.9;
       border-radius: 50%;
       animation: float 4s ease-in-out infinite;
+      pointer-events: none;
     }
     .sparkle.s1 { top: 12%; left: 18%; animation-delay: 0s; }
     .sparkle.s2 { top: 22%; right: 22%; animation-delay: 1s; }
@@ -158,6 +166,9 @@
       display: inline-flex;
       gap: 8px;
       align-items: center;
+    }
+    .score-pop {
+      animation: scorePop 320ms ease;
     }
     .score small { color: var(--muted); font-weight: 600; }
     .btn {
@@ -200,15 +211,66 @@
     .floating {
       position: absolute;
       font-weight: 800;
-      font-size: 16px;
-      color: #fff;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      font-size: 20px;
+      color: #fff7d1;
+      text-shadow: 0 4px 14px rgba(0,0,0,0.42);
       pointer-events: none;
-      animation: rise 900ms ease-out forwards;
+      z-index: 30;
+      animation: rise 760ms cubic-bezier(.2,.8,.2,1) forwards;
+    }
+    .coin-burst {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff4bc 0%, #ffd45a 60%, rgba(255,212,90,0) 100%);
+      box-shadow: 0 0 10px rgba(255,202,82,0.55);
+      pointer-events: none;
+      z-index: 28;
+      animation: burst 620ms cubic-bezier(.2,.8,.3,1) forwards;
+      transform: translate(-50%, -50%);
+    }
+    .coin-fly {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      object-fit: cover;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 32;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+      animation: flyToScore 680ms cubic-bezier(.2,.8,.2,1) forwards;
     }
     @keyframes rise {
-      0% { transform: translate(-50%, 0) scale(0.9); opacity: 1; }
-      100% { transform: translate(-50%, -60px) scale(1.2); opacity: 0; }
+      0% { transform: translate(-50%, 0) scale(0.8); opacity: 0; }
+      15% { transform: translate(-50%, -10px) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -76px) scale(1.2); opacity: 0; }
+    }
+    @keyframes burst {
+      0% {
+        transform: translate(-50%, -50%) translate(0, 0) scale(0.6);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0.1);
+        opacity: 0;
+      }
+    }
+    @keyframes flyToScore {
+      0% {
+        transform: translate(-50%, -50%) translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0.24);
+        opacity: 0;
+      }
+    }
+    @keyframes scorePop {
+      0% { transform: scale(1); }
+      45% { transform: scale(1.08); }
+      100% { transform: scale(1); }
     }
     .bg-orbit {
       position: absolute;
@@ -241,14 +303,15 @@
     <div class="card" id="card">
       <div class="bg-orbit" aria-hidden="true"></div>
       <div class="hud">
-        <div class="score"><span>🪙</span><span id="score">0</span><small id="mult">x1</small></div>
+        <div class="score" id="scoreBox"><span>🪙</span><span id="score">0</span><small id="mult">x1</small></div>
         <button class="btn primary" id="send">📤 Send to bot</button>
       </div>
       <div class="stage" id="stage">
         <div class="coin-wrap">
-          <div class="coin" id="coin" role="button" aria-label="Монетка"></div>
+          <button class="coin" id="coin" type="button" aria-label="Монетка">
+            <img src="coin.png" alt="Монетка" draggable="false" />
+          </button>
           <div class="coin-ring" aria-hidden="true"></div>
-          <div class="coin-logo">TG</div>
           <div class="sparkle s1"></div>
           <div class="sparkle s2"></div>
           <div class="sparkle s3"></div>
@@ -265,7 +328,7 @@
   </div>
 
   <script>
-    // 1) Инициализация Telegram WebApp
+    // 1) Telegram WebApp initialization
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
@@ -277,12 +340,14 @@
     const sizeEl = document.getElementById("size");
     const scoreEl = document.getElementById("score");
     const multEl = document.getElementById("mult");
+    const scoreBoxEl = document.getElementById("scoreBox");
     const stageEl = document.getElementById("stage");
     const cardEl = document.getElementById("card");
     const coinEl = document.getElementById("coin");
     const sendBtn = document.getElementById("send");
+    const coinImageSrc = coinEl.querySelector("img")?.getAttribute("src") || "coin.png";
 
-    // Тема/данные пользователя (если доступно)
+    // Theme/user data (if available)
     const user = tg?.initDataUnsafe?.user;
     metaEl.textContent = user
       ? `Привет, ${user.first_name}${user.username ? " (@" + user.username + ")" : ""}`
@@ -294,11 +359,14 @@
     function updateSize() {
       const r = cardEl.getBoundingClientRect();
       sizeEl.textContent = `${Math.floor(r.width)}×${Math.floor(r.height)}`;
+
+      const size = Math.floor(Math.min(r.width, r.height) * 0.25);
+      cardEl.style.setProperty("--coin-size", `${size}px`);
     }
     window.addEventListener("resize", updateSize);
     updateSize();
 
-    // 2) Логика игры
+    // 2) Game logic
     let score = 0;
     let combo = 0;
     let lastTap = 0;
@@ -317,7 +385,47 @@
       el.style.top = y + "px";
       el.textContent = text;
       stageEl.appendChild(el);
-      setTimeout(() => el.remove(), 950);
+      setTimeout(() => el.remove(), 800);
+    }
+
+    function spawnBurst(x, y) {
+      const particles = 8;
+      for (let i = 0; i < particles; i += 1) {
+        const p = document.createElement("div");
+        const angle = (Math.PI * 2 * i) / particles + Math.random() * 0.35;
+        const dist = 24 + Math.random() * 26;
+        p.className = "coin-burst";
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+        p.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+        p.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+        stageEl.appendChild(p);
+        setTimeout(() => p.remove(), 650);
+      }
+    }
+
+    function flyCoinToScore(x, y) {
+      const scoreRect = scoreBoxEl.getBoundingClientRect();
+      const stageRect = stageEl.getBoundingClientRect();
+      const targetX = scoreRect.left + scoreRect.width / 2 - stageRect.left;
+      const targetY = scoreRect.top + scoreRect.height / 2 - stageRect.top;
+
+      const coin = document.createElement("img");
+      coin.className = "coin-fly";
+      coin.src = coinImageSrc;
+      coin.alt = "";
+      coin.style.left = x + "px";
+      coin.style.top = y + "px";
+      coin.style.setProperty("--tx", `${targetX - x}px`);
+      coin.style.setProperty("--ty", `${targetY - y}px`);
+      stageEl.appendChild(coin);
+      setTimeout(() => coin.remove(), 700);
+    }
+
+    function animateScoreBox() {
+      scoreBoxEl.classList.remove("score-pop");
+      void scoreBoxEl.offsetWidth;
+      scoreBoxEl.classList.add("score-pop");
     }
 
     function tapCoin(evt) {
@@ -333,14 +441,16 @@
       const x = (evt.clientX || (evt.touches && evt.touches[0]?.clientX) || rect.left + rect.width / 2) - rect.left;
       const y = (evt.clientY || (evt.touches && evt.touches[0]?.clientY) || rect.top + rect.height / 2) - rect.top;
       spawnFloating(x, y, `+${add} 🪙`);
+      spawnBurst(x, y);
+      flyCoinToScore(x, y);
+      animateScoreBox();
 
       if (tg) tg.HapticFeedback?.impactOccurred("light");
     }
 
-    coinEl.addEventListener("click", tapCoin);
-    coinEl.addEventListener("touchstart", tapCoin, { passive: true });
+    coinEl.addEventListener("pointerdown", tapCoin);
 
-    // 3) Отправка данных боту (Mini App -> бот)
+    // 3) Send data to bot (Mini App -> bot)
     sendBtn.addEventListener("click", () => {
       const payload = {
         ts: Date.now(),
