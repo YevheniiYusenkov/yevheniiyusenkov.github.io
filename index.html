@@ -3,58 +3,163 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Telegram Mini App</title>
+  <title>Telegram Mini App • Coin Tap</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg: #0b0f1a;
-      --card: rgba(255,255,255,0.08);
-      --text: #e8ecff;
-      --muted: rgba(232,236,255,0.7);
+      --bg: #0a0c14;
+      --bg2: #0f1324;
+      --card: rgba(255,255,255,0.06);
+      --text: #eef1ff;
+      --muted: rgba(238,241,255,0.62);
+      --gold1: #ffd36e;
+      --gold2: #ffb703;
+      --gold3: #ff8f00;
+      --mint: #3cf4d4;
+      --accent: #7aa2ff;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
+      background: radial-gradient(1200px 800px at 20% -10%, #1a2140 0%, transparent 60%),
+                  radial-gradient(900px 700px at 120% 0%, #13252f 0%, transparent 55%),
+                  linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
       color: var(--text);
-      height: 100vh;
       display: grid;
       place-items: center;
     }
     .app {
-      width: min(720px, 100vw);
-      height: min(900px, 100vh);
+      width: min(760px, 100vw);
+      height: min(960px, 100vh);
       padding: 16px;
-      box-sizing: border-box;
       display: grid;
-      gap: 12px;
       grid-template-rows: auto 1fr auto;
+      gap: 12px;
     }
     .header {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
-    .title { font-size: 20px; font-weight: 700; }
+    .title { font-size: 20px; font-weight: 800; letter-spacing: 0.2px; }
     .meta { font-size: 12px; color: var(--muted); }
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-size: 12px;
+      color: var(--muted);
+    }
     .card {
       background: var(--card);
       border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 20px;
       position: relative;
-      min-height: 320px;
+      overflow: hidden;
+      min-height: 360px;
+      box-shadow: var(--shadow);
     }
-    canvas { display: block; width: 100%; height: 100%; }
-    .overlay {
+    .stage {
       position: absolute;
-      left: 12px; right: 12px; bottom: 12px;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .coin-wrap {
+      position: relative;
+      width: min(52vw, 280px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+    }
+    .coin {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 30%, #fff7d1 0%, rgba(255,255,255,0.7) 18%, transparent 28%),
+        radial-gradient(circle at 70% 65%, rgba(255,255,255,0.35) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, var(--gold1) 0%, var(--gold2) 55%, var(--gold3) 100%);
+      box-shadow:
+        inset 0 6px 10px rgba(255,255,255,0.35),
+        inset 0 -12px 16px rgba(0,0,0,0.25),
+        0 18px 30px rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.28);
+      display: grid;
+      place-items: center;
+      transform: translateZ(0);
+      transition: transform 120ms ease, box-shadow 120ms ease;
+    }
+    .coin:active {
+      transform: scale(0.98);
+      box-shadow:
+        inset 0 4px 8px rgba(255,255,255,0.32),
+        inset 0 -10px 14px rgba(0,0,0,0.22),
+        0 10px 20px rgba(0,0,0,0.3);
+    }
+    .coin-ring {
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      border: 2px dashed rgba(255,255,255,0.35);
+      mix-blend-mode: screen;
+      opacity: 0.6;
+    }
+    .coin-logo {
+      font-weight: 900;
+      font-size: clamp(28px, 7vw, 52px);
+      color: #7a4b00;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.35);
+      letter-spacing: 1px;
+    }
+    .sparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0.0) 70%);
+      opacity: 0.9;
+      border-radius: 50%;
+      animation: float 4s ease-in-out infinite;
+    }
+    .sparkle.s1 { top: 12%; left: 18%; animation-delay: 0s; }
+    .sparkle.s2 { top: 22%; right: 22%; animation-delay: 1s; }
+    .sparkle.s3 { bottom: 18%; left: 30%; animation-delay: 2s; }
+    .sparkle.s4 { bottom: 28%; right: 18%; animation-delay: 3s; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+      50% { transform: translateY(-8px) scale(1.2); opacity: 1; }
+    }
+    .hud {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
       display: flex;
       gap: 10px;
       align-items: center;
       justify-content: space-between;
+      pointer-events: none;
     }
+    .score {
+      pointer-events: auto;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.16);
+      font-weight: 700;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .score small { color: var(--muted); font-weight: 600; }
     .btn {
       appearance: none;
       border: 0;
@@ -64,20 +169,61 @@
       color: var(--text);
       font-weight: 600;
       cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
     }
     .btn:active { transform: translateY(1px); }
+    .btn.primary {
+      background: linear-gradient(180deg, rgba(122,162,255,0.95), rgba(94,128,255,0.85));
+      color: #0a0c14;
+      box-shadow: 0 10px 20px rgba(88,118,255,0.35);
+    }
     .footer {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 10px;
-      color: var(--muted);
       font-size: 12px;
+      color: var(--muted);
     }
-    .pill {
+    .tap-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(0,0,0,0.25);
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .floating {
+      position: absolute;
+      font-weight: 800;
+      font-size: 16px;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      pointer-events: none;
+      animation: rise 900ms ease-out forwards;
+    }
+    @keyframes rise {
+      0% { transform: translate(-50%, 0) scale(0.9); opacity: 1; }
+      100% { transform: translate(-50%, -60px) scale(1.2); opacity: 0; }
+    }
+    .bg-orbit {
+      position: absolute;
+      inset: -20% 0 0 0;
+      pointer-events: none;
+      background:
+        radial-gradient(closest-side, rgba(124,197,255,0.12), transparent 70%),
+        radial-gradient(closest-side, rgba(60,244,212,0.10), transparent 70%);
+      mix-blend-mode: screen;
+      filter: blur(2px);
+      animation: orbit 12s linear infinite;
+    }
+    @keyframes orbit {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -86,23 +232,35 @@
   <div class="app">
     <div class="header">
       <div>
-        <div class="title">Mini App: Canvas UI</div>
+        <div class="title">Coin Tap • Mini Game</div>
         <div class="meta" id="meta">Загрузка...</div>
       </div>
       <div class="pill" id="theme">theme</div>
     </div>
 
     <div class="card" id="card">
-      <canvas id="c"></canvas>
-      <div class="overlay">
-        <button class="btn" id="randomize">🎲 Randomize</button>
-        <button class="btn" id="send">📤 Send to bot</button>
+      <div class="bg-orbit" aria-hidden="true"></div>
+      <div class="hud">
+        <div class="score"><span>🪙</span><span id="score">0</span><small id="mult">x1</small></div>
+        <button class="btn primary" id="send">📤 Send to bot</button>
+      </div>
+      <div class="stage" id="stage">
+        <div class="coin-wrap">
+          <div class="coin" id="coin" role="button" aria-label="Монетка"></div>
+          <div class="coin-ring" aria-hidden="true"></div>
+          <div class="coin-logo">TG</div>
+          <div class="sparkle s1"></div>
+          <div class="sparkle s2"></div>
+          <div class="sparkle s3"></div>
+          <div class="sparkle s4"></div>
+        </div>
+        <div class="tap-hint">Кликай по монетке, чтобы собирать 🪙</div>
       </div>
     </div>
 
     <div class="footer">
       <div class="pill" id="size">size</div>
-      <div class="pill">Tap-дружественный UI • 60fps</div>
+      <div class="pill">Телеграм Mini App • Tap-friendly</div>
     </div>
   </div>
 
@@ -111,12 +269,18 @@
     const tg = window.Telegram?.WebApp;
     if (tg) {
       tg.ready();
-      tg.expand(); // раскрыть по высоте
+      tg.expand();
     }
 
     const metaEl = document.getElementById("meta");
     const themeEl = document.getElementById("theme");
-    const sizeEl  = document.getElementById("size");
+    const sizeEl = document.getElementById("size");
+    const scoreEl = document.getElementById("score");
+    const multEl = document.getElementById("mult");
+    const stageEl = document.getElementById("stage");
+    const cardEl = document.getElementById("card");
+    const coinEl = document.getElementById("coin");
+    const sendBtn = document.getElementById("send");
 
     // Тема/данные пользователя (если доступно)
     const user = tg?.initDataUnsafe?.user;
@@ -127,79 +291,62 @@
     const scheme = tg?.colorScheme || "unknown";
     themeEl.textContent = `scheme: ${scheme}`;
 
-    // 2) Canvas-графика (простая “пузырьковая” анимация)
-    const canvas = document.getElementById("c");
-    const card   = document.getElementById("card");
-    const ctx    = canvas.getContext("2d");
-
-    let W = 0, H = 0, dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-
-    function resize() {
-      const r = card.getBoundingClientRect();
-      W = Math.floor(r.width);
-      H = Math.floor(r.height);
-      canvas.width  = Math.floor(W * dpr);
-      canvas.height = Math.floor(H * dpr);
-      canvas.style.width  = W + "px";
-      canvas.style.height = H + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      sizeEl.textContent = `${W}×${H}`;
+    function updateSize() {
+      const r = cardEl.getBoundingClientRect();
+      sizeEl.textContent = `${Math.floor(r.width)}×${Math.floor(r.height)}`;
     }
-    window.addEventListener("resize", resize);
-    resize();
+    window.addEventListener("resize", updateSize);
+    updateSize();
 
-    function rand(min, max) { return min + Math.random() * (max - min); }
+    // 2) Логика игры
+    let score = 0;
+    let combo = 0;
+    let lastTap = 0;
 
-    let bubbles = [];
-    function seed(n=24) {
-      bubbles = Array.from({length: n}, () => ({
-        x: rand(0, W), y: rand(0, H),
-        r: rand(10, 42),
-        vx: rand(-0.6, 0.6), vy: rand(-0.6, 0.6),
-        a: rand(0.2, 0.9)
-      }));
+    function calcMultiplier(now) {
+      const delta = now - lastTap;
+      if (delta < 350) combo = Math.min(combo + 1, 10);
+      else combo = Math.max(combo - 1, 0);
+      return 1 + Math.floor(combo / 2);
     }
-    seed();
 
-    function tick() {
-      ctx.clearRect(0, 0, W, H);
-
-      // фон-градиент
-      const g = ctx.createLinearGradient(0, 0, W, H);
-      g.addColorStop(0, "rgba(120, 140, 255, 0.10)");
-      g.addColorStop(1, "rgba(20, 220, 180, 0.07)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, W, H);
-
-      // “пузырьки”
-      for (const b of bubbles) {
-        b.x += b.vx; b.y += b.vy;
-        if (b.x < -50) b.x = W + 50;
-        if (b.x > W + 50) b.x = -50;
-        if (b.y < -50) b.y = H + 50;
-        if (b.y > H + 50) b.y = -50;
-
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232, 236, 255, ${0.10 * b.a})`;
-        ctx.fill();
-        ctx.strokeStyle = `rgba(232, 236, 255, ${0.18 * b.a})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      requestAnimationFrame(tick);
+    function spawnFloating(x, y, text) {
+      const el = document.createElement("div");
+      el.className = "floating";
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      el.textContent = text;
+      stageEl.appendChild(el);
+      setTimeout(() => el.remove(), 950);
     }
-    tick();
 
-    document.getElementById("randomize").onclick = () => seed();
+    function tapCoin(evt) {
+      const now = Date.now();
+      const mult = calcMultiplier(now);
+      lastTap = now;
+      const add = mult;
+      score += add;
+      scoreEl.textContent = score.toLocaleString("ru-RU");
+      multEl.textContent = `x${mult}`;
+
+      const rect = stageEl.getBoundingClientRect();
+      const x = (evt.clientX || (evt.touches && evt.touches[0]?.clientX) || rect.left + rect.width / 2) - rect.left;
+      const y = (evt.clientY || (evt.touches && evt.touches[0]?.clientY) || rect.top + rect.height / 2) - rect.top;
+      spawnFloating(x, y, `+${add} 🪙`);
+
+      if (tg) tg.HapticFeedback?.impactOccurred("light");
+    }
+
+    coinEl.addEventListener("click", tapCoin);
+    coinEl.addEventListener("touchstart", tapCoin, { passive: true });
 
     // 3) Отправка данных боту (Mini App -> бот)
-    document.getElementById("send").onclick = () => {
+    sendBtn.addEventListener("click", () => {
       const payload = {
         ts: Date.now(),
         user: user ? { id: user.id, name: user.first_name } : null,
-        bubbles: bubbles.length
+        score,
+        combo
       };
       if (tg) {
         tg.sendData(JSON.stringify(payload));
@@ -207,7 +354,7 @@
       } else {
         alert("tg API недоступен (открой из Telegram)");
       }
-    };
+    });
   </script>
 </body>
 </html>
